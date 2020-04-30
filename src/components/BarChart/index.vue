@@ -25,8 +25,8 @@ type Bar = {
 };
 
 @Component
-export default class Histogram extends Vue {
-  @Prop() private histogramData!: Array<number>;
+export default class BarChart extends Vue {
+  @Prop() private barChartData!: Array<number>;
 
   private svg = {
     height: 400,
@@ -37,20 +37,20 @@ export default class Histogram extends Vue {
 
   get bars(): Array<Bar> {
     const XScale = scaleLinear()
-      .domain([0, this.histogramData.length])
+      .domain([0, this.barChartData.length])
       .range([0, this.svg.width]);
 
     const YScale = scaleLinear()
-      .domain([0, Math.max(...this.histogramData)])
+      .domain([0, Math.max(...this.barChartData)])
       .range([0, this.svg.height]);
 
-    const barsData = this.histogramData.map((d, idx) => {
+    const barsData = this.barChartData.map((d, idx) => {
       const height = YScale(d);
       return {
         x: XScale(idx),
         y: this.svg.height - height,
         height,
-        width: this.svg.width / this.histogramData.length - 1,
+        width: this.svg.width / this.barChartData.length - 1,
       };
     });
 

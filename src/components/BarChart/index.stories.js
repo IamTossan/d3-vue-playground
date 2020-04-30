@@ -1,15 +1,15 @@
 import { withKnobs, number } from '@storybook/addon-knobs';
-import Histogram from '.';
+import BarChart from '.';
 
 export default {
-  component: Histogram,
-  title: 'Histogram',
+  component: BarChart,
+  title: 'Bar chart',
   decorators: [withKnobs],
 };
 
 export const basic = () => ({
-  components: { Histogram },
-  template: '<Histogram :histogram-data="ratings"/>',
+  components: { BarChart },
+  template: '<BarChart :bar-chart-data="ratings"/>',
   props: {
     ratings: {
       default: () =>
