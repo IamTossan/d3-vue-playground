@@ -19,7 +19,8 @@ export const basic = () => ({
             x: Math.random() * number('values range', 100, {}, 'data'),
             y: Math.random() * number('values range', 100, {}, 'data'),
             description: `This is dot number: ${idx}`,
-          })),
+          }))
+          .sort((a, b) => a.x - b.x),
     },
   },
 });

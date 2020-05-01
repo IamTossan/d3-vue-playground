@@ -1,12 +1,13 @@
 <template>
   <svg :height="svg.height" :width="svg.width">
+    <path stroke="#aaa" fill="none" stroke-width="5" :d="edges" />
     <circle
-      v-for="(dot, index) in dots"
+      v-for="(node, index) in nodes"
       :key="index"
-      :cx="dot.cx"
-      :cy="dot.cy"
-      :r="dot.r"
-      @click="handleClickDot(dot)"
+      :cx="node.cx"
+      :cy="node.cy"
+      :r="node.r"
+      @click="handleClickNode(node)"
     />
     <g ref="xAxis" :transform="`translate(0, ${svg.height - svg.padding})`" />
   </svg>
@@ -14,7 +15,7 @@
 
 <script lang="ts">
 import { Component, Prop, Vue, Ref, Watch } from 'vue-property-decorator';
-import { scaleLinear, axisBottom, select } from 'd3';
+import { scaleLinear, axisBottom, select, line, curveMonotoneX } from 'd3';
 
 interface Dot {
   x: number;
@@ -22,7 +23,7 @@ interface Dot {
   description: string;
 }
 
-interface Circle {
+interface Node {
   cx: number;
   cy: number;
   r: number;
@@ -42,19 +43,23 @@ export default class ConnectedDots extends Vue {
     color: '#4287f5',
   };
 
-  get dots(): Array<Circle> {
-    const XScale = scaleLinear()
+  get xScale() {
+    return scaleLinear()
       .domain([0, Math.max(...this.chartData.map(d => d.x))])
       .range([this.svg.padding, this.svg.width - this.svg.padding]);
+  }
 
-    const YScale = scaleLinear()
+  get yScale() {
+    return scaleLinear()
       .domain([0, Math.max(...this.chartData.map(d => d.y))])
       .range([this.svg.padding, this.svg.height - this.svg.padding * 2]);
+  }
 
+  get nodes(): Array<Node> {
     const dotsData = this.chartData.map((d: Dot) => {
-      const height = YScale(d.y);
+      const height = this.yScale(d.y);
       return {
-        cx: XScale(d.x),
+        cx: this.xScale(d.x),
         cy: this.svg.height - this.svg.padding - height,
         r: 5,
         description: d.description,
@@ -64,31 +69,45 @@ export default class ConnectedDots extends Vue {
     return dotsData;
   }
 
+  get edges(): string | null {
+    const lineGenerator = line()
+      .curve(curveMonotoneX)
+      .x(v => v[0])
+      .y(v => v[1]);
+
+    return lineGenerator(
+      this.chartData.map(v => [
+        this.xScale(v.x),
+        this.svg.height - this.svg.padding - this.yScale(v.y),
+      ]),
+    );
+  }
+
   mounted() {
     this.onBarChartDataChanged();
   }
 
   @Watch('chartData')
   onBarChartDataChanged(): void {
-    const XScale = scaleLinear()
-      .domain([0, Math.max(...this.chartData.map(d => d.x))])
-      .range([this.svg.padding, this.svg.width - this.svg.padding]);
-
-    const xAxis = axisBottom(XScale);
+    const xAxis = axisBottom(this.xScale);
 
     select(this.xAxis).call(xAxis);
 
     return;
   }
 
-  public handleClickDot(dot: Circle) {
+  public handleClickNode(dot: Node) {
     console.log(dot);
   }
 }
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 svg {
   background-color: #eee;
+  path,
+  circle {
+    transition: all 500ms ease;
+  }
 }
 </style>
