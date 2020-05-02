@@ -1,12 +1,18 @@
 <template>
   <svg :height="svg.height" :width="svg.width">
-    <path stroke="#aaa" fill="none" stroke-width="5" :d="edges" />
+    <path
+      :stroke="svg.colors.secondary"
+      fill="none"
+      stroke-width="5"
+      :d="edges"
+    />
     <circle
       v-for="(node, index) in nodes"
       :key="index"
       :cx="node.cx"
       :cy="node.cy"
       :r="node.r"
+      :fill="svg.colors.primary"
       @click="handleClickNode(node)"
     />
     <g ref="xAxis" :transform="`translate(0, ${svg.height - svg.padding})`" />
@@ -16,6 +22,7 @@
 <script lang="ts">
 import { Component, Prop, Vue, Ref, Watch } from 'vue-property-decorator';
 import { scaleLinear, axisBottom, select, line, curveMonotoneX } from 'd3';
+import colors from '../../theme';
 
 interface Dot {
   x: number;
@@ -40,7 +47,7 @@ export default class ConnectedDots extends Vue {
     height: 400,
     width: 600,
     padding: 20,
-    color: '#4287f5',
+    colors,
   };
 
   get xScale() {
@@ -91,7 +98,12 @@ export default class ConnectedDots extends Vue {
   onBarChartDataChanged(): void {
     const xAxis = axisBottom(this.xScale);
 
-    select(this.xAxis).call(xAxis);
+    const axisElement = select(this.xAxis).call(xAxis);
+
+    axisElement
+      .selectAll('path, line')
+      .attr('stroke', this.svg.colors.darkPrimary);
+    axisElement.selectAll('text').attr('fill', this.svg.colors.darkPrimary);
 
     return;
   }
@@ -104,7 +116,6 @@ export default class ConnectedDots extends Vue {
 
 <style scoped lang="scss">
 svg {
-  background-color: #eee;
   path,
   circle {
     transition: all 500ms ease;

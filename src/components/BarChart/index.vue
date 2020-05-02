@@ -7,7 +7,7 @@
       :y="bar.y"
       :height="bar.height"
       :width="bar.width"
-      :fill="svg.color"
+      :fill="svg.colors.primary"
       rx="0.5%"
     ></rect>
     <g ref="xAxis" :transform="`translate(0, ${svg.height - svg.padding})`" />
@@ -17,6 +17,7 @@
 <script lang="ts">
 import { Component, Prop, Vue, Ref, Watch } from 'vue-property-decorator';
 import { scaleLinear, axisBottom, select } from 'd3';
+import colors from '../../theme';
 
 type Bar = {
   x: number;
@@ -35,7 +36,7 @@ export default class BarChart extends Vue {
     height: 400,
     width: 600,
     padding: 20,
-    color: '#4287f5',
+    colors,
   };
 
   get bars(): Array<Bar> {
@@ -74,15 +75,16 @@ export default class BarChart extends Vue {
 
     const xAxis = axisBottom(XScale);
 
-    select(this.xAxis).call(xAxis);
+    const axisElement = select(this.xAxis).call(xAxis);
+
+    axisElement
+      .selectAll('path, line')
+      .attr('stroke', this.svg.colors.darkPrimary);
+    axisElement.selectAll('text').attr('fill', this.svg.colors.darkPrimary);
 
     return;
   }
 }
 </script>
 
-<style scoped>
-svg {
-  background-color: #eee;
-}
-</style>
+<style scoped></style>
